@@ -143,7 +143,7 @@ def process_image(name, debug, **options):
 
 
 if len(sys.argv) < 2:
-    path = 'tests/5.jpg'
+    path = 'dataset/1.jpg'
     print('usage:\n python main.py <image_file_path>')
     # exit(0)
 else:

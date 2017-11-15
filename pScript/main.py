@@ -13,7 +13,6 @@ def validate_contour(contour, img, aspect_ratio_range, area_range):
     box = cv2.boxPoints(rect)
     box = np.int0(box)
 
-    angle = rect[2]
     width = rect[1][0]
     height = rect[1][1]
 
@@ -21,8 +20,8 @@ def validate_contour(contour, img, aspect_ratio_range, area_range):
 
     if (width > 0 and height > 0) and ((width < img_width / 2.0) and (height < img_width / 2.0)):
         aspect_ratio = float(width) / height if width > height else float(height) / width
-        if aspect_ratio_range[0] <= aspect_ratio <= aspect_ratio_range[1]:
-            if (height * width > area_range[0]) and (height * width < area_range[1]):
+        if (aspect_ratio >= aspect_ratio_range[0] and aspect_ratio <= aspect_ratio_range[1]):
+            if ((height * width > area_range[0]) and (height * width < area_range[1])):
 
                 box_copy = list(box)
                 point = box_copy[0]
@@ -131,12 +130,16 @@ def process_image(name, debug, **options):
                 xmin, xmax = box[:, 1].min(), box[:, 1].max()
                 ymin, ymax = box[:, 0].min(), box[:, 0].max()
 
-                imsave('cropped.png', image[xmin:xmax, ymin:ymax])
+                width = xmax - xmin
+                height = ymax - ymin
+                alpha = .076
+
+                imsave('cropped.png', image[int(xmin + alpha * width):int(xmax - alpha * width),
+                                            int(ymin + alpha * height):int(ymax - alpha * height)])
 
                 with PyTessBaseAPI(psm=PSM.SINGLE_LINE) as api:
                     api.SetImageFile('cropped.png')
                     print(api.GetUTF8Text())
-
                 cv2.drawContours(input_image, [box], 0, (127, 0, 255), 2)
 
     return input_image
@@ -144,7 +147,7 @@ def process_image(name, debug, **options):
 
 if len(sys.argv) < 2:
     path = 'dataset/1.jpg'
-    print('usage:\n python main.py <image_file_path>')
+    print('usage:\n python pyANPD.py <image_file_path>')
     # exit(0)
 else:
     path = sys.argv[1]
